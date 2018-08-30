@@ -104,6 +104,7 @@ public class AddressBook {
                                                       + PERSON_DATA_PREFIX_PHONE + "PHONE_NUMBER "
                                                       + PERSON_DATA_PREFIX_EMAIL + "EMAIL";
     private static final String COMMAND_ADD_EXAMPLE = COMMAND_ADD_WORD + " John Doe p/98765432 e/johnd@gmail.com";
+    private static final String COMMAND_ADD_EXIST = "The given person exists in current list";
 
     private static final String COMMAND_FIND_WORD = "find";
     private static final String COMMAND_FIND_DESC = "Finds all persons whose names contain any of the specified "
@@ -388,6 +389,7 @@ public class AddressBook {
         }
     }
 
+
     /**
      * Splits raw user input into command word and command arguments string
      *
@@ -423,11 +425,32 @@ public class AddressBook {
         if (!decodeResult.isPresent()) {
             return getMessageForInvalidCommandInput(COMMAND_ADD_WORD, getUsageInfoForAddCommand());
         }
+        if(!personExist(commandArgs)){
+            // add the person as specified
+            final String[] personToAdd = decodeResult.get();
+            addPersonToAddressBook(personToAdd);
+            return getMessageForSuccessfulAddPerson(personToAdd);
+        } else {
+            return COMMAND_ADD_EXIST;
+        }
 
-        // add the person as specified
-        final String[] personToAdd = decodeResult.get();
-        addPersonToAddressBook(personToAdd);
-        return getMessageForSuccessfulAddPerson(personToAdd);
+    }
+
+    /**
+     * Check whether the person name exist in the list already
+     * @param commandArgs the input data typed in by the user
+     * @return whether the person name exist in the list already
+     */
+    private static boolean personExist(String commandArgs) {
+        String name = extractNameFromPersonString(commandArgs);
+        ArrayList<String[]> exist_list = getAllPersonsInAddressBook();
+        for(int i=0; i < exist_list.size(); i++){
+            String list_name = exist_list.get(i)[0];
+            if(list_name.equals(name)){
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
